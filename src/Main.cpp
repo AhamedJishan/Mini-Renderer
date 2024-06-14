@@ -8,7 +8,7 @@ const TGAColor white = TGAColor(255, 255, 255, 255);
 void line(int x0, int y0, int x1, int y1, TGAImage& img, const TGAColor& color)
 {
 	bool steep = false;
-	if (abs(x1-x0) < abs(y1-y0))				// If the line is steep we transpose the image
+	if (std::abs(x0-x1) < std::abs(y0-y1))				// If the line is steep we transpose the image
 	{
 		std::swap(x0, y0);
 		std::swap(x1, y1);
@@ -17,8 +17,8 @@ void line(int x0, int y0, int x1, int y1, TGAImage& img, const TGAColor& color)
 
 	if (x0 > x1)								// Make it Left to Right
 	{
-		std::swap(x1, x0);
-		std::swap(y1, y0);
+		std::swap(x0, x1);
+		std::swap(y0, y1);
 	}
 
 	int dx = x1 - x0;
@@ -34,7 +34,7 @@ void line(int x0, int y0, int x1, int y1, TGAImage& img, const TGAColor& color)
 
 	int y = y0;
 
-	for (int x = 0; x <= x1; x++)
+	for (int x = x0; x <= x1; x++)
 	{
 		if (steep)
 			img.set(y, x, color);
@@ -66,12 +66,25 @@ void line(int x0, int y0, int x1, int y1, TGAImage& img, const TGAColor& color)
 
 int main()
 {
-	TGAImage image(250, 250, 3);
+	TGAImage image(400, 400, 3);
 
-	line(13, 20, 80, 40, image, white);
-	line(20, 13, 40, 80, image, red);
-	line(80, 40, 13, 20, image, red);
-	line(100, 13, 10, 250, image, blue);
+	//line(0, 0, 150, 100, image, white);
+	//line(400, 0, 250, 100, image, white);
+	//line(150, 100, 250, 100, image, green);
+	//line(150, 100, 10, 250, image, blue);
+
+	// Draw the doorway
+	line(150, 100, 150, 300, image, white);  // Left vertical side
+	line(250, 100, 250, 300, image, white);  // Right vertical side
+	line(150, 100, 250, 100, image, white);  // Top horizontal side
+	line(150, 300, 250, 300, image, white);  // Bottom horizontal side (optional)
+
+	// Draw lines for depth
+	line(150, 100, 0, 0, image, white);  // Top-left of doorway to top-left of image
+	line(250, 100, 400, 0, image, white);  // Top-right of doorway to top-right of image
+	line(0, 200, 150, 200, image, white);
+	line(250, 200, 400, 200, image, white);
+
 
 	image.flip_vertically();
 	image.write_tga_file("output/LineTest.tga");
