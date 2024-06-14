@@ -1,5 +1,11 @@
 #include "tgaimage.h"
 
+#include "model.h"
+#include "vectors.h"
+
+#include <iostream>
+
+
 const TGAColor red = TGAColor(255, 0, 0, 255);
 const TGAColor green = TGAColor(0, 255, 0, 255);
 const TGAColor blue = TGAColor(0, 0, 255, 255);
@@ -66,25 +72,25 @@ void line(int x0, int y0, int x1, int y1, TGAImage& img, const TGAColor& color)
 
 int main()
 {
-	TGAImage image(400, 400, 3);
+	TGAImage image(1024, 1024, 3);	
 
-	//line(0, 0, 150, 100, image, white);
-	//line(400, 0, 250, 100, image, white);
-	//line(150, 100, 250, 100, image, green);
-	//line(150, 100, 10, 250, image, blue);
+	Model model("input/Head.obj");
 
-	// Draw the doorway
-	line(150, 100, 150, 300, image, white);  // Left vertical side
-	line(250, 100, 250, 300, image, white);  // Right vertical side
-	line(150, 100, 250, 100, image, white);  // Top horizontal side
-	line(150, 300, 250, 300, image, white);  // Bottom horizontal side (optional)
+	for (auto face : model.faces)
+	{
+		for (int i = 0; i<face.size(); i++)
+		{
+			Vec3f v0 = model.vertices[face[i]-1];
+			Vec3f v1 = model.vertices[face[(i + 1)%face.size()] - 1];
+			int x0 = (v0.x + 1.) * image.get_width() / 2;
+			int x1 = (v1.x + 1.) * image.get_width() / 2;
+			int y0 = (v0.y + 1.) * image.get_height() / 2;
+			int y1 = (v1.y + 1.) * image.get_height() / 2;
 
-	// Draw lines for depth
-	line(150, 100, 0, 0, image, white);  // Top-left of doorway to top-left of image
-	line(250, 100, 400, 0, image, white);  // Top-right of doorway to top-right of image
-	line(0, 200, 150, 200, image, white);
-	line(250, 200, 400, 200, image, white);
-
+			line(x0, y0, x1, y1, image, (i%3==0)?blue:white);
+			
+		}
+	}
 
 	image.flip_vertically();
 	image.write_tga_file("output/LineTest.tga");
