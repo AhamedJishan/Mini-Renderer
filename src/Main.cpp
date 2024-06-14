@@ -23,8 +23,14 @@ void line(int x0, int y0, int x1, int y1, TGAImage& img, const TGAColor& color)
 
 	int dx = x1 - x0;
 	int dy = y1 - y0;
-	float derror = std::abs(dy/(float)dx);		// Slope of line or rate of increment of y over x
-	float error = 0;							// This will increase by derror for every 1 x
+	
+
+	// Original Eq for Slope of line or rate of increment of y over x
+	// => derror = dy/dx			{multiply by 2 * dx both sides}
+	// => 2 * dx * derror = 2 * dy	{Let 2 * dx * derror = derror2}
+	// => derror2 = 2* dx			{slso means that derror = derror2 / (2*dx)}
+	int derror2 = std::abs(dy) * 2;				
+	int error2 = 0;								
 
 	int y = y0;
 
@@ -35,11 +41,25 @@ void line(int x0, int y0, int x1, int y1, TGAImage& img, const TGAColor& color)
 		else
 			img.set(x, y, color);
 
-		error += derror;
-		if (error>0.5)							// checking if error (y) has accumulated enough to move up or down
+		// Original part: error += derror
+		// => error += derror2 / 2*dx			{as derror = derror2 / 2*dx}		
+		// => 2 * dx * error += derror2			{Let 2 * dx * error = error2}
+		// => error2 += derror2					{Also means error = error2 / (2 * dx)}
+		error2 += derror2;
+
+		// Original part: error > 0.5			{As error = error2 / (2 * dx)}
+		// => error2 / (2 * dx) > 0.5
+		// => error2 > 0.5 * 2 * dx
+		// => error2 > dx						{Hence we can successfully replace error>0.5 with error2>dx} 
+		if (error2 > dx)
 		{
 			y += y1 > y0 ? 1 : -1;
-			error -= 1.;
+
+			// Original part: error -= 1
+			// => error2 / (2 * dx) -= 1		{As error = error2 / (2 * dx)}
+			// => error2 -= 1 * 2 * dx
+			// => error2 -= 2 * dx
+			error2 -= 2 * dx;
 		}
 	}
 }
