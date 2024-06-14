@@ -165,7 +165,7 @@ bool TGAImage::write_tga_file(const char* filename, bool rle) {
 	header.width = width;
 	header.height = height;
 	header.datatypecode = (bytespp == GRAYSCALE ? (rle ? 11 : 3) : (rle ? 10 : 2));
-	header.imagedescriptor = 0x08; // bottom-left origin with 8 bit alpha
+	header.imagedescriptor = 0x28; // bottom-left origin with 8 bit alpha
 	out.write((char*)&header, sizeof(header));
 	if (!out.good()) {
 		out.close();
