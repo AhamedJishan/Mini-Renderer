@@ -4,6 +4,8 @@
 #include "vectors.h"
 
 #include <iostream>
+#include <vector>
+#include <algorithm>
 
 
 const TGAColor red = TGAColor(255, 0, 0, 255);
@@ -70,28 +72,45 @@ void line(int x0, int y0, int x1, int y1, TGAImage& img, const TGAColor& color)
 	}
 }
 
-int main()
+float lerp(float a, float b, float t) {
+	return a + t * (b - a);
+}
+
+bool triangle(Vec2i& v0, Vec2i& v1, Vec2i v2, TGAImage& img, const TGAColor& color)
 {
-	TGAImage image(1024, 1024, 3);	
+	std::vector<Vec2i> sortedVerts = { v0, v1, v2 };
 
-	Model model("input/Head.obj");
+	std::sort(sortedVerts.begin(), sortedVerts.end(), [](const Vec2i& a, const Vec2i& b) { return a.y > b.y; });
 
-	for (auto face : model.faces)
+	for (int y = sortedVerts[0].y - 1; y > sortedVerts[2].y; y--)
 	{
-		for (int i = 0; i<face.size(); i++)
-		{
-			Vec3f v0 = model.vertices[face[i]-1];
-			Vec3f v1 = model.vertices[face[(i + 1)%face.size()] - 1];
-			int x0 = (v0.x + 1.) * image.get_width() / 2;
-			int x1 = (v1.x + 1.) * image.get_width() / 2;
-			int y0 = (v0.y + 1.) * image.get_height() / 2;
-			int y1 = (v1.y + 1.) * image.get_height() / 2;
-
-			line(x0, y0, x1, y1, image, (i%3==0)?blue:white);
-			
-		}
+		float n = (y - sortedVerts[2].y);
+		float d = (sortedVerts[0].y - sortedVerts[2].y);
+		float dy = n/d;
+		float x1 = lerp(sortedVerts[0].x, sortedVerts[1].x, dy);
+		float x2 = lerp(sortedVerts[0].x, sortedVerts[2].x, dy);
+		line(x1, y, x2, y, img, color);
 	}
 
+	 line(v0.x, v0.y, v1.x, v1.y, img, blue);
+	 line(v1.x, v1.y, v2.x, v2.y, img, blue);
+	 line(v2.x, v2.y, v0.x, v0.y, img, blue);
+	 
+	return true;
+}
+
+int main()
+{
+	TGAImage image(500, 500, 3);
+
+	Vec2i t1[3] = { Vec2i(100, 100), Vec2i(200, 150), Vec2i(150, 250) };
+	Vec2i t2[3] = { Vec2i(300, 100), Vec2i(300, 300), Vec2i(500, 100) };
+	Vec2i t3[3] = { Vec2i(50, 400), Vec2i(400, 450), Vec2i(250, 300) };
+
+	triangle(t1[0], t1[1], t1[2], image, red);
+	triangle(t2[0], t2[1], t2[2], image, white);
+	triangle(t3[0], t3[1], t3[2], image, green);
+
 	image.flip_vertically();
-	image.write_tga_file("output/LineTest.tga");
+	image.write_tga_file("output/render.tga");
 }
